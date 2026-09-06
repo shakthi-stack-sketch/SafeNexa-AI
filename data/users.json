@@ -1,0 +1,68 @@
+[
+  {
+    "id": "USR-ADM-01",
+    "name": "HSE Lead Administrator",
+    "email": "admin@safenexa.com",
+    "organization": "Oil India Limited",
+    "role": "Administrator",
+    "password_hash": "5b34e0630624995f46b9dee24f65d973f16ab307a09326306d316d18c49a7259a0f67208f15c6174354f2ee26863ace88fe1d891cafeb79ac45306e0e6a12a9e",
+    "salt": "7fbe194b3a4c4874b11c28644f55e37d",
+    "created_at": "2026-09-04T17:18:18.317Z",
+    "last_login": "2026-09-04T17:26:11.981Z"
+  },
+  {
+    "id": "USR-MGR-02",
+    "name": "Operations HSE Manager",
+    "email": "manager@safenexa.com",
+    "organization": "Oil India Limited",
+    "role": "HSE Manager",
+    "password_hash": "b382bbcdd63b105d908e1673d65605160573cc85105eaea0089d4b9c79a53893a35f18e218cd62ffdfb11fb6294d129ca38251a80e81699a31a236709ccbf412",
+    "salt": "7d013185ee271c67f8abbaae6f2bc441",
+    "created_at": "2026-09-04T17:18:18.317Z",
+    "last_login": "2026-09-04T17:54:06.833Z"
+  },
+  {
+    "id": "USR-OFF-03",
+    "name": "Field HSE Officer",
+    "email": "officer@safenexa.com",
+    "organization": "Oil India Limited",
+    "role": "HSE Officer",
+    "password_hash": "016111d9d2bed1866b3607d1d3208c8b1ad3df2b41f2743bdcd25ce2a8b70352ca58bb2a142dac7964468d7cc011bababffc5ad8f8de796a93eebeba87c9a0a2",
+    "salt": "4b027c01beca9df5112da7db4bf31c63",
+    "created_at": "2026-09-04T17:18:18.317Z",
+    "last_login": "2026-09-04T17:23:04.066Z"
+  },
+  {
+    "id": "USR-7246",
+    "name": "shakthi",
+    "email": "shakthi@gmail.com",
+    "organization": "oil",
+    "role": "HSE Officer",
+    "password_hash": "62aa96b9f07bdae4b028c46091ee8c7a51e34334c1c8028389422c44de915913b572c147be742c31bdc45d28e7d14ef1b8d7137a2bf0ac6fe84e5fd2ebee5b44",
+    "salt": "be19b0b0a174af4189fc12e814ce2baf",
+    "created_at": "2026-09-04T17:56:19.346Z",
+    "last_login": "2026-09-05T16:07:57.019Z"
+  },
+  {
+    "id": "USR-6682",
+    "name": "santhosh",
+    "email": "thayir@gmail.com",
+    "organization": "OIL",
+    "role": "HSE Officer",
+    "password_hash": "5343cd11cc17687eb7693dfad89c7d2445ee9dcec407f40dd3cd1eeb38a02a2d25699f87a20dea78a8b6efb13ff54006dd9494cab607e06a21d6195c47ef3448",
+    "salt": "a78a508a5d033f8100453a47b8396c4a",
+    "created_at": "2026-09-05T07:37:13.873Z",
+    "last_login": "2026-09-05T07:37:23.989Z"
+  },
+  {
+    "id": "USR-4124",
+    "name": "Yazhini",
+    "email": "yazhinisp7002@gmail.com",
+    "organization": "Oil india limited",
+    "role": "HSE Officer",
+    "password_hash": "5340f480ffab5cb585a1babebe480c957360c386f94202531b90f97e40d7ae5bae9fd8afd8d11c2ab5587a44b8e94e16c0de2bfd83e5d3a0b89744b562d24a0e",
+    "salt": "59cce244cd4d3290c268421a40ba927d",
+    "created_at": "2026-09-05T15:47:17.216Z",
+    "last_login": "2026-09-05T18:36:10.165Z"
+  }
+]

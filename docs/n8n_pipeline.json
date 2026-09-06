@@ -1,0 +1,143 @@
+{
+  "name": "OIL-SIF-Intelligence-Automation-Pipeline",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 15
+            }
+          ]
+        }
+      },
+      "id": "schedule-trigger",
+      "name": "Cron Ingestion Schedule (Every 15m)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [200, 300]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "oil-report-webhook",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Instant Report Ingestion Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [200, 480]
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:3000/api/reports/analyze",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"report_text\": $json.body.report_text,\n  \"report_type\": $json.body.report_type || \"Near Miss\",\n  \"site\": $json.body.site || \"Duliajan CPF\",\n  \"date\": $json.body.date,\n  \"auto_save\": true\n}",
+        "options": {}
+      },
+      "id": "http-nlp-analysis",
+      "name": "Call NLP / SIF Classifier",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [440, 400]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.sif_potential }}",
+              "value2": "HIGH"
+            }
+          ]
+        }
+      },
+      "id": "if-high-sif",
+      "name": "Is High SIF Potential?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [680, 400]
+    },
+    {
+      "parameters": {
+        "channel": "oil-hse-emergency-alerts",
+        "text": "=:rotating_light: *CRITICAL SIF PRECURSOR DETECTED*\\n*Report ID:* {{ $json.report_id }}\\n*Rule:* {{ $json.life_saving_rule }}\\n*Precursor:* {{ $json.sif_precursor }}\\n*Location:* {{ $json.location }}\\n*Confidence:* {{ Math.round($json.sif_score * 100) }}%\\n*Immediate Action:* {{ $json.recommended_actions.immediate[0] }}",
+        "options": {}
+      },
+      "id": "slack-alert",
+      "name": "Broadcast HSE High Priority Alert",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.1,
+      "position": [920, 320]
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:3000/api/alerts",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"id\": \"ALT-\" + Math.floor(800 + Math.random() * 200),\n  \"severity\": \"HIGH\",\n  \"trigger\": \"Automated n8n Trigger: High SIF precursor flagged for \" + $json.life_saving_rule,\n  \"report_id\": $json.report_id,\n  \"site\": $json.location,\n  \"activity\": $json.activity,\n  \"precursor\": $json.sif_precursor,\n  \"status\": \"ACTIVE\"\n}",
+        "options": {}
+      },
+      "id": "log-system-alert",
+      "name": "Sync Alert into HSE Registry",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [920, 480]
+    }
+  ],
+  "connections": {
+    "schedule-trigger": {
+      "main": [
+        [
+          {
+            "node": "http-nlp-analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "webhook-trigger": {
+      "main": [
+        [
+          {
+            "node": "http-nlp-analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "http-nlp-analysis": {
+      "main": [
+        [
+          {
+            "node": "if-high-sif",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "if-high-sif": {
+      "main": [
+        [
+          {
+            "node": "slack-alert",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "log-system-alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

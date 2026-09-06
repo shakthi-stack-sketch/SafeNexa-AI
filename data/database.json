@@ -1,0 +1,196 @@
+{
+  "reports": [
+    {
+      "id": "R-9934",
+      "report_text": "Report Type: Near MissLocation: Pump Maintenance Area – Process Plant\n\nDuring the scheduled maintenance of a centrifugal pump, the maintenance team was assigned to inspect and replace a damaged coupling guard. Before starting the work, the team stopped the pump using the normal control switch. However, the electrical supply to the motor was not physically isolated and no lockout/tagout procedure was applied.\n\nOne technician began inspecting the coupling area while another worker was preparing tools nearby. During the inspection, the pump unexpectedly started when the control system received an automatic restart signal following a temporary power interruption.\n\nThe technician immediately noticed movement in the rotating equipment and stepped away from the pump. No injury occurred, but the technician had been standing very close to the rotating coupling and could have been struck or caught in the moving machinery.\n\nThe supervisor stopped the equipment and the electrical supply was subsequently isolated. The investigation found that the required energy isolation and lockout procedure had not been completed before maintenance began. The team had relied only on the normal stop button and had not verified that the equipment was in a zero-energy state.\n\nThe incident was recorded as a near miss because no one was injured. However, the uncontrolled release of energy and unexpected movement of rotating equipment had the potential to cause a serious injury or fatality.",
+      "report_type": "Near Miss",
+      "site": "Moran Central Tank Farm",
+      "date": "2026-09-05",
+      "activity": "Pressure System Energy Isolation",
+      "location": "Moran Central Tank Farm",
+      "hazard": "Potential hazard exposure under Energy Isolation",
+      "barrier_failure": "Not identified in the report",
+      "sif_potential": "LOW",
+      "sif_score": 0.28,
+      "life_saving_rule": "Energy Isolation",
+      "sif_precursor": "Routine operational observation with low energy concentration",
+      "explanation": "Routine operational deviation with lower energy concentration. No direct failure of a life-critical safety barrier identified. Remediation involves local housekeeping and standard procedural reinforcement.",
+      "evidence": [
+        "truck",
+        "isolation",
+        "lockout",
+        "tagout"
+      ],
+      "recommended_actions": {
+        "immediate": [
+          "Address immediate low-energy condition (e.g. area housekeeping or tool stowage)."
+        ],
+        "control": [
+          "Verify standard procedural housekeeping in work area."
+        ],
+        "verification": [
+          "Local supervisor visual confirmation of tidy and unobstructed work area."
+        ],
+        "preventive": [
+          "Reinforce routine 5S housekeeping during daily toolbox briefing (TBT)."
+        ]
+      },
+      "review_status": "Pending Review",
+      "is_demo": false,
+      "created_at": "2026-09-05T18:55:26.526Z",
+      "updated_at": "2026-09-05T18:55:26.526Z"
+    },
+    {
+      "id": "R-2442",
+      "report_text": "Sample Safety Report – Energy Isolation Near Miss\n\nReport Type: Near MissDate: 05 September 2026Site: Oil Processing FacilityDepartment: Maintenance\n\nSafety Observation Report\n\nDuring scheduled maintenance on a centrifugal pump at the oil processing facility, a maintenance technician was assigned to inspect and replace a damaged coupling guard.\n\nBefore starting the work, the technician isolated the electrical supply to the pump from the local control panel. However, during verification, the maintenance supervisor identified that the pump could still be started remotely from the central control room.\n\nThe remote electrical control circuit had not been isolated as part of the energy isolation procedure.\n\nWhile the technician was preparing to remove the coupling guard, an operator in the control room attempted to start the pump as part of a routine operational check. The pump did not start because another protective interlock prevented operation.\n\nThe technician was positioned close to the rotating equipment at the time. If the protective interlock had failed or been bypassed, the unexpected startup of the pump could have resulted in serious injury.\n\nNo injury occurred.\n\nHazard Identified\n\nUnexpected energization and startup of rotating equipment.\n\nPotential Consequences\n\nSerious crush injury \n\nEntanglement with rotating equipment \n\nSevere hand or body injury \n\nBarrier Failure\n\nIncomplete energy isolation \n\nRemote control circuit was not isolated \n\nIsolation verification was insufficient before maintenance began \n\nImmediate Action Taken\n\nThe maintenance activity was stopped immediately. The supervisor informed the control room, and a complete isolation procedure was performed.\n\nThe electrical supply and remote control circuit were isolated, locked, and verified before maintenance resumed.\n\nRecommended Follow-up Actions\n\nReview the Lockout/Tagout procedure for rotating equipment. \n\nEnsure all energy sources, including remote and stored energy sources, are identified. \n\nRequire verification of zero-energy state before maintenance begins. \n\nConduct a toolbox talk on energy isolation and unexpected equipment startup.",
+      "report_type": "Near Miss",
+      "site": "Moran Tank Farm",
+      "date": "2026-09-05",
+      "activity": "Pressure System Energy Isolation",
+      "location": "Moran Tank Farm",
+      "hazard": "Potential hazard exposure under Bypassing Safety Controls",
+      "barrier_failure": "Positive energy isolation and zero-energy verification missing",
+      "sif_potential": "MEDIUM",
+      "sif_score": 0.72,
+      "life_saving_rule": "Bypassing Safety Controls",
+      "sif_precursor": "Unmitigated exposure due to: positive energy isolation and zero-energy verification missing",
+      "explanation": "Identified deviation involves 'Bypassing Safety Controls' within Pressure System Energy Isolation. Barrier deficiency observed: positive energy isolation and zero-energy verification missing. While immediate fatality potential was partially mitigated by secondary controls, repeat occurrence escalates SIF vulnerability.",
+      "evidence": [
+        "bypass",
+        "bypassed",
+        "interlock",
+        "isolation",
+        "lockout"
+      ],
+      "recommended_actions": {
+        "immediate": [
+          "Execute Stop Work Authority (SWA) immediately on pressure system energy isolation until site is made safe.",
+          "Quarantine the immediate hazard perimeter at Moran Tank Farm."
+        ],
+        "control": [
+          "Reinstate the compromised barrier: positive energy isolation and zero-energy verification missing.",
+          "Verify physical verification of 'Bypassing Safety Controls' control requirements before lifting work hold."
+        ],
+        "verification": [
+          "Require HSE Area Supervisor to physically inspect and sign off on site readiness checklist.",
+          "Perform calibrated instrument testing and continuous surveillance during active work."
+        ],
+        "preventive": [
+          "Conduct a focused Safety Stand-down and review with the involved operating crew on 'Bypassing Safety Controls'.",
+          "Audit similar ongoing tasks across the asset to identify identical barrier failures."
+        ]
+      },
+      "review_status": "Pending Review",
+      "is_demo": false,
+      "created_at": "2026-09-05T07:43:44.632Z",
+      "updated_at": "2026-09-05T07:43:44.633Z"
+    },
+    {
+      "id": "R-6016",
+      "report_text": "Safety Report – High SIF Potential\n\nReport Type: Near MissDate: 05 September 2026Site: Moran Tank FarmDepartment: Operations\n\nSafety Observation Report\n\nDuring a maintenance activity at the Moran Tank Farm, a contractor team was preparing to inspect a process line located approximately 6 metres above ground level.\n\nThe workers accessed the elevated platform using a temporary ladder. During the inspection, it was observed that one worker was working close to an unprotected edge without being properly connected to an approved fall-arrest anchorage point.\n\nThe worker was wearing a safety harness; however, the lanyard was not attached to any secure anchorage. The temporary work platform also did not have complete edge protection on one side.\n\nWhile attempting to inspect the pipeline, the worker lost balance momentarily after stepping on a loose section of the platform. Another worker nearby assisted him, preventing a potential fall.\n\nNo injury occurred.\n\nImmediate Hazard Identified\n\nPotential fall from height resulting in serious injury or fatality.\n\nBarrier Failure\n\nFall protection system was not properly connected. \n\nIncomplete edge protection was present. \n\nTemporary work platform inspection was inadequate before work started. \n\nImmediate Action Taken\n\nThe activity was stopped immediately. The worker was moved to a safe location, and the supervisor was informed. The temporary platform was isolated until proper edge protection and approved anchorage points could be verified.\n\nRecommended Follow-up\n\nInspect all temporary elevated work platforms. \n\nVerify fall-protection anchorage before work begins. \n\nConduct a toolbox talk on working-at-height requirements. \n\nReview supervisor pre-job inspection procedures.",
+      "report_type": "Near Miss",
+      "site": "Moran Tank Farm",
+      "date": "2026-09-05",
+      "activity": "Working at Elevation",
+      "location": "Moran Tank Farm",
+      "hazard": "Unprotected Fall from Significant Height (>6m)",
+      "barrier_failure": "Not identified in the report",
+      "sif_potential": "HIGH",
+      "sif_score": 0.9,
+      "life_saving_rule": "Working at Height",
+      "sif_precursor": "Working at Height barrier absent or compromised during Working at Elevation",
+      "explanation": "High-potential energy exposure identified under the IOGP Life-Saving Rule 'Working at Height'. Direct exposure to hazard: Unprotected Fall from Significant Height (>6m). Without an active independent safeguard, this event possessed credible potential for fatal or life-altering consequence.",
+      "evidence": [
+        "fall from",
+        "tank",
+        "toolbox talk",
+        "height",
+        "fall"
+      ],
+      "recommended_actions": {
+        "immediate": [
+          "Execute Stop Work Authority (SWA) immediately on working at elevation until site is made safe.",
+          "Quarantine the immediate hazard perimeter at Moran Tank Farm."
+        ],
+        "control": [
+          "Reinstate required physical barriers and safeguards.",
+          "Verify physical verification of 'Working at Height' control requirements before lifting work hold."
+        ],
+        "verification": [
+          "Require HSE Area Supervisor to physically inspect and sign off on site readiness checklist.",
+          "Perform calibrated instrument testing and continuous surveillance during active work."
+        ],
+        "preventive": [
+          "Conduct a focused Safety Stand-down and review with the involved operating crew on 'Working at Height'.",
+          "Audit similar ongoing tasks across the asset to identify identical barrier failures."
+        ]
+      },
+      "review_status": "Pending Review",
+      "is_demo": false,
+      "created_at": "2026-09-05T05:49:10.505Z",
+      "updated_at": "2026-09-05T05:49:10.506Z"
+    }
+  ],
+  "patterns": [
+    {
+      "id": "PAT-01",
+      "pattern_name": "Bypassing Safety Controls Barrier Deviation (Pressure System Energy Isolation)",
+      "activity": "Pressure System Energy Isolation",
+      "location": "Moran Tank Farm",
+      "barrier_failure": "Positive energy isolation and zero-energy verification missing",
+      "frequency": 1,
+      "sif_count": 1,
+      "sif_density": 1,
+      "trend": "up",
+      "associated_hazard": "Potential hazard exposure under Bypassing Safety Controls",
+      "life_saving_rule": "Bypassing Safety Controls",
+      "representative_report_ids": [
+        "R-2442"
+      ],
+      "recommended_intervention": "Mandate dedicated verification check and engineered safeguard for positive energy isolation and zero-energy verification missing.",
+      "created_at": "2026-09-05T18:55:26.527Z",
+      "is_demo": false
+    },
+    {
+      "id": "PAT-02",
+      "pattern_name": "Working at Height Barrier Deviation (Working at Elevation)",
+      "activity": "Working at Elevation",
+      "location": "Moran Tank Farm",
+      "barrier_failure": "Not identified in the report",
+      "frequency": 1,
+      "sif_count": 1,
+      "sif_density": 1,
+      "trend": "up",
+      "associated_hazard": "Unprotected Fall from Significant Height (>6m)",
+      "life_saving_rule": "Working at Height",
+      "representative_report_ids": [
+        "R-6016"
+      ],
+      "recommended_intervention": "Mandate dedicated verification check and engineered safeguard for not identified in the report.",
+      "created_at": "2026-09-05T18:55:26.527Z",
+      "is_demo": false
+    }
+  ],
+  "alerts": [
+    {
+      "id": "ALT-941",
+      "severity": "HIGH",
+      "trigger": "Critical SIF Precursor Flagged: 'Working at Height' exposure detected at Moran Tank Farm.",
+      "report_id": "R-6016",
+      "site": "Moran Tank Farm",
+      "activity": "Working at Elevation",
+      "precursor": "Working at Height barrier absent or compromised during Working at Elevation",
+      "status": "ACTIVE",
+      "is_demo": false,
+      "created_at": "2026-09-05T05:49:10.510Z",
+      "assigned_to": "Asset HSE Lead"
+    }
+  ],
+  "feedback": [],
+  "thresholds": {
+    "high": 0.75,
+    "medium": 0.45,
+    "pSifConfidence": 0.75
+  },
+  "is_demo_mode": false
+}

@@ -1,0 +1,117 @@
+// Prisma Schema for OIL SIF Intelligence
+// Supports PostgreSQL with dual-mode fallback to local JSON storage
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  organization  String    @default("Oil India Limited")
+  role          String    @default("HSE Officer") // 'HSE Officer' | 'HSE Manager' | 'Administrator'
+  password_hash String
+  salt          String
+  created_at    DateTime  @default(now())
+  last_login    DateTime?
+
+  @@map("users")
+}
+
+model Report {
+  id                      String    @id
+  report_text             String    @db.Text
+  report_type             String    // 'UA' | 'UC' | 'Near Miss' | 'Incident' | 'Unsafe Act' | 'Unsafe Condition'
+  site                    String
+  date                    String
+  activity                String
+  location                String
+  hazard                  String
+  barrier_failure         String
+  sif_potential           String    // 'HIGH' | 'MEDIUM' | 'LOW' | 'NON-SIF'
+  sif_score               Float     // 0.0 to 1.0
+  life_saving_rule        String
+  sif_precursor           String
+  explanation             String    @db.Text
+  evidence                Json      // Array of key highlighted phrases
+  recommended_actions     Json      // { immediate: string[], control: string[], verification: string[], preventive: string[] }
+  review_status           String    @default("Pending Review") // 'Pending Review' | 'Reviewed' | 'Escalated' | 'Corrected'
+  reviewer_comment        String?   @db.Text
+  corrected_sif_potential  String?
+  is_demo                 Boolean   @default(false)
+  created_at              DateTime  @default(now())
+  updated_at              DateTime  @updatedAt
+
+  @@index([sif_potential])
+  @@index([site])
+  @@index([life_saving_rule])
+  @@index([date])
+  @@map("reports")
+}
+
+model PrecursorPattern {
+  id                        String   @id
+  pattern_name              String
+  activity                  String
+  location                  String
+  barrier_failure           String
+  frequency                 Int      @default(1)
+  sif_count                 Int      @default(0)
+  sif_density               Float    @default(0.0)
+  trend                     String   @default("stable") // 'up' | 'down' | 'stable'
+  associated_hazard         String
+  life_saving_rule          String
+  representative_report_ids  Json     // string[] of report IDs
+  recommended_intervention  String   @db.Text
+  is_demo                   Boolean  @default(false)
+  created_at                DateTime @default(now())
+
+  @@index([life_saving_rule])
+  @@map("precursor_patterns")
+}
+
+model HSEAlert {
+  id          String    @id
+  severity    String    // 'HIGH' | 'MEDIUM' | 'LOW'
+  trigger     String    @db.Text
+  report_id   String?
+  site        String
+  activity    String
+  precursor   String
+  status      String    @default("ACTIVE") // 'ACTIVE' | 'ACKNOWLEDGED' | 'ESCALATED' | 'RESOLVED'
+  is_demo     Boolean   @default(false)
+  assigned_to String?
+  created_at  DateTime  @default(now())
+  resolved_at DateTime?
+
+  @@index([status])
+  @@index([severity])
+  @@map("hse_alerts")
+}
+
+model HSEFeedback {
+  id               String   @id
+  report_id        String
+  ai_prediction    Json     // { sif_potential, sif_score, life_saving_rule, sif_precursor, barrier_failure }
+  hse_correction   Json     // { sif_potential, life_saving_rule, sif_precursor, barrier_failure }
+  reviewer_comment String   @db.Text
+  reviewer_name    String
+  created_at       DateTime @default(now())
+
+  @@index([report_id])
+  @@map("hse_feedback")
+}
+
+model SystemSetting {
+  key        String   @id
+  value      Json
+  updated_at DateTime @updatedAt
+
+  @@map("system_settings")
+}

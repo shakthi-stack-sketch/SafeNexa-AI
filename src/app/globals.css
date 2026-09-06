@@ -1,0 +1,119 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* DARK MODE IS DEFAULT (Midnight Aubergine + Champagne Palette) */
+  --bg: #14111A;
+  --surface-primary: #1D1824;
+  --surface-secondary: #251F2E;
+  --surface-elevated: #2D2538;
+  --accent-primary: #C8A96B;
+  --accent-secondary: #8E7AA8;
+  --accent-hover: #D6BB83;
+  --accent-contrast: #14111A;
+  --text-primary: #F1ECE4;
+  --text-secondary: #B9B3C2;
+  --text-muted: #A9A2AE;
+  --sif-high: #C95C62;
+  --sif-high-bg: rgba(201, 92, 98, 0.18);
+  --sif-medium: #B08A52;
+  --sif-medium-bg: rgba(176, 138, 82, 0.18);
+  --sif-low: #718A78;
+  --sif-low-bg: rgba(113, 138, 120, 0.18);
+  --border-color: rgba(255, 255, 255, 0.10);
+  --border-subtle: rgba(255, 255, 255, 0.05);
+}
+
+html.light {
+  /* LIGHT MODE (Midnight Aubergine + Champagne Palette with High Contrast) */
+  --bg: #F5F1EA;
+  --surface-primary: #FCFAF6;
+  --surface-secondary: #EAE3DA;
+  --surface-elevated: #FFFFFF;
+  --accent-primary: #947137;
+  --accent-secondary: #5E4A66;
+  --accent-hover: #7E5F2C;
+  --accent-contrast: #14111A;
+  --text-primary: #1A1720;
+  --text-secondary: #3D3844;
+  --text-muted: #5C5664;
+  --sif-high: #A5393F;
+  --sif-high-bg: rgba(165, 57, 63, 0.14);
+  --sif-medium: #8A642B;
+  --sif-medium-bg: rgba(138, 100, 43, 0.14);
+  --sif-low: #4A6E53;
+  --sif-low-bg: rgba(74, 110, 83, 0.14);
+  --border-color: rgba(26, 23, 32, 0.18);
+  --border-subtle: rgba(26, 23, 32, 0.10);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text-primary);
+  font-family: 'Inter', 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Primary Button & Card Interactive Micro-Interactions */
+.btn-primary-interactive {
+  transition: all 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-primary-interactive:hover {
+  transform: translateY(-1.5px);
+  box-shadow: 0 4px 14px -2px rgba(200, 169, 107, 0.40);
+}
+
+.btn-primary-interactive:active {
+  transform: translateY(0.5px);
+  box-shadow: 0 2px 6px -1px rgba(200, 169, 107, 0.20);
+}
+
+.card-interactive {
+  transition: all 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.card-interactive:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px -4px rgba(0, 0, 0, 0.30);
+}
+
+/* Subtle custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--surface-secondary);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-secondary);
+}
+
+/* Focus styling */
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+}
+
+/* Recharts container responsive tweaks */
+.recharts-responsive-container {
+  min-width: 0 !important;
+}
