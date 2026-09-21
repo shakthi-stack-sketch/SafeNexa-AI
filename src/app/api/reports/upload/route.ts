@@ -3,16 +3,42 @@ import { extractTextFromBuffer } from '@/lib/extractor/text_extractor';
 import { analyzeReport } from '@/lib/nlp/engine';
 import { reportsStore } from '@/lib/store/reports_store';
 import { Report, ReportType } from '@/lib/types';
+import { verifySessionToken } from '@/lib/auth/crypto';
+import { usersStore } from '@/lib/auth/users_store';
 
 export async function POST(req: NextRequest) {
   try {
+    // Get the currently logged-in user's email
+    const sessionCookie = req.cookies.get('safenexa_session')?.value;
+
+    let userEmail: string | null = null;
+
+    if (sessionCookie) {
+      const payload = verifySessionToken(sessionCookie);
+
+      if (payload) {
+        const user =
+          usersStore.findById(payload.userId) ||
+          usersStore.findByEmail(payload.email);
+
+        if (user) {
+          userEmail = user.email;
+        }
+      }
+    }
+
     const formData = await req.formData();
     const file = formData.get('file') as File | null;
     const pastedText = formData.get('report_text') as string | null;
-    const reportType = (formData.get('report_type') as ReportType) || 'Near Miss';
-    const site = (formData.get('site') as string) || 'Moran Central Tank Farm';
-    const date = (formData.get('date') as string) || new Date().toISOString().split('T')[0];
-    const activity = (formData.get('activity') as string) || undefined;
+    const reportType =
+      (formData.get('report_type') as ReportType) || 'Near Miss';
+    const site =
+      (formData.get('site') as string) || 'Moran Central Tank Farm';
+    const date =
+      (formData.get('date') as string) ||
+      new Date().toISOString().split('T')[0];
+    const activity =
+      (formData.get('activity') as string) || undefined;
 
     let narrativeText = '';
 
@@ -27,25 +53,33 @@ export async function POST(req: NextRequest) {
           { status: 422 }
         );
       }
+
       narrativeText = extraction.text;
     } else if (pastedText && pastedText.trim().length > 0) {
       narrativeText = pastedText.trim();
     } else {
       return NextResponse.json(
-        { error: 'Please provide either a valid report file (PDF, DOCX, TXT) or paste report narrative text.' },
+        {
+          error:
+            'Please provide either a valid report file (PDF, DOCX, TXT) or paste report narrative text.',
+        },
         { status: 400 }
       );
     }
 
     if (narrativeText.length < 10) {
       return NextResponse.json(
-        { error: 'The report text is too brief for safety precursor evaluation. Please provide a descriptive observation narrative.' },
+        {
+          error:
+            'The report text is too brief for safety precursor evaluation. Please provide a descriptive observation narrative.',
+        },
         { status: 400 }
       );
     }
 
     // Execute NLP & SIF Precursor Detection Engine
     const thresholds = reportsStore.getThresholds();
+
     const analysis = analyzeReport(
       {
         report_text: narrativeText,
@@ -76,7 +110,7 @@ export async function POST(req: NextRequest) {
       evidence: analysis.evidence,
       recommended_actions: analysis.recommended_actions,
       review_status: 'Pending Review',
-      is_demo: false, // Explicitly tagged as real uploaded data
+      is_demo: false,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
@@ -84,16 +118,21 @@ export async function POST(req: NextRequest) {
     // Persist to database
     reportsStore.addReport(savedReport);
 
-    // Automatically trigger Workflow 1 (Critical Safety Alert) for HIGH SIF reports
+    // Automatically trigger Workflow 1 (Critical Safety Alert)
+    // for HIGH SIF reports
     let workflowTriggered = false;
     let workflowStatus: number | null = null;
 
     if (savedReport.sif_potential === 'HIGH') {
-      const webhookUrl = process.env.N8N_CRITICAL_ALERT_WEBHOOK || 'http://localhost:5678/webhook/safenexa-critical-alert';
+      const webhookUrl =
+        process.env.N8N_CRITICAL_ALERT_WEBHOOK ||
+        'http://localhost:5678/webhook/safenexa-critical-alert';
+
       try {
         console.log('Sending Critical Safety Alert to n8n...');
         console.log('Webhook URL:', webhookUrl);
         console.log('Trigger condition:', savedReport.sif_potential);
+        console.log('Alert recipient:', userEmail || 'No logged-in user email found');
 
         const webhookResponse = await fetch(webhookUrl, {
           method: 'POST',
@@ -119,11 +158,16 @@ export async function POST(req: NextRequest) {
             review_status: savedReport.review_status,
             date: savedReport.date,
             created_at: savedReport.created_at,
+
+            // Dynamic email recipient
+            userEmail: userEmail,
           }),
         });
 
         workflowStatus = webhookResponse.status;
+
         console.log('HTTP response:', webhookResponse.status);
+
         const responseBody = await webhookResponse.text();
         console.log('Response body:', responseBody);
 
@@ -131,7 +175,10 @@ export async function POST(req: NextRequest) {
           workflowTriggered = true;
         }
       } catch (webhookError) {
-        console.error('Critical Safety Alert webhook failed:', webhookError);
+        console.error(
+          'Critical Safety Alert webhook failed:',
+          webhookError
+        );
       }
     }
 
@@ -150,7 +197,13 @@ export async function POST(req: NextRequest) {
     );
   } catch (error: any) {
     const errorMsg = error?.message || '';
-    if (errorMsg.includes('does not appear to describe an HSE or safety observation') || errorMsg.includes('too short')) {
+
+    if (
+      errorMsg.includes(
+        'does not appear to describe an HSE or safety observation'
+      ) ||
+      errorMsg.includes('too short')
+    ) {
       return NextResponse.json(
         { error: errorMsg },
         { status: 422 }
@@ -158,8 +211,12 @@ export async function POST(req: NextRequest) {
     }
 
     console.error('Error in /api/reports/upload:', error);
+
     return NextResponse.json(
-      { error: 'Upload processing failed. Please check the file and try again.' },
+      {
+        error:
+          'Upload processing failed. Please check the file and try again.',
+      },
       { status: 500 }
     );
   }
