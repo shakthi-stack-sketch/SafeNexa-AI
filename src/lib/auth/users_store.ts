@@ -2,22 +2,28 @@ import fs from 'fs';
 import path from 'path';
 import { User, UserRole, UserPublicProfile } from '../types';
 import { hashPassword, verifyPassword } from './crypto';
-import { getPrismaClient, isPostgresConfigured, checkPostgresHealth } from '../db/prisma';
+import {
+  getPrismaClient,
+  isPostgresConfigured,
+  checkPostgresHealth,
+} from '../db/prisma';
 
 const DATA_DIR = path.join(process.cwd(), 'data');
 const USERS_FILE = path.join(DATA_DIR, 'users.json');
 
 class UsersStore {
   private users: User[] = [];
-  private isPostgresActive: boolean = false;
-  private isInitializingPostgres: boolean = false;
+  private isPostgresActive = false;
+  private isInitializingPostgres = false;
 
   constructor() {
-    // 1. Synchronous load from disk for instant response
     this.loadFromDisk();
-    // 2. Asynchronously verify PostgreSQL
+
     this.initPostgresIfAvailable().catch((err) => {
-      console.warn('[Dual-Mode Users] Non-fatal error initializing PostgreSQL for users:', err);
+      console.warn(
+        '[UsersStore] PostgreSQL initialization failed:',
+        err
+      );
     });
   }
 
@@ -27,20 +33,24 @@ class UsersStore {
     }
 
     this.isInitializingPostgres = true;
+
     try {
       const isHealthy = await checkPostgresHealth();
+
       if (!isHealthy) {
         this.isPostgresActive = false;
         return false;
       }
 
       const prisma = getPrismaClient();
+
       if (!prisma) {
         this.isPostgresActive = false;
         return false;
       }
 
       this.isPostgresActive = true;
+
       const dbUsers = await prisma.user.findMany();
 
       if (dbUsers.length > 0) {
@@ -53,31 +63,48 @@ class UsersStore {
           password_hash: u.password_hash,
           salt: u.salt,
           created_at: u.created_at.toISOString(),
-          last_login: u.last_login ? u.last_login.toISOString() : undefined,
+          last_login: u.last_login
+            ? u.last_login.toISOString()
+            : undefined,
         }));
+
         this.saveToDisk();
-      } else if (dbUsers.length === 0 && this.users.length > 0) {
-        // Seed empty PostgreSQL User table from memory
+      } else if (this.users.length > 0) {
+        // Only seed PostgreSQL if it is completely empty.
         for (const u of this.users) {
-          await prisma.user.create({
-            data: {
-              id: u.id,
-              name: u.name,
-              email: u.email,
-              organization: u.organization,
-              role: u.role,
-              password_hash: u.password_hash,
-              salt: u.salt,
-              created_at: new Date(u.created_at),
-              last_login: u.last_login ? new Date(u.last_login) : null,
-            },
-          });
+          try {
+            await prisma.user.create({
+              data: {
+                id: u.id,
+                name: u.name,
+                email: u.email,
+                organization: u.organization,
+                role: u.role,
+                password_hash: u.password_hash,
+                salt: u.salt,
+                created_at: new Date(u.created_at),
+                last_login: u.last_login
+                  ? new Date(u.last_login)
+                  : null,
+              },
+            });
+          } catch (error) {
+            console.warn(
+              '[UsersStore] Could not seed user:',
+              u.email,
+              error
+            );
+          }
         }
       }
 
       return true;
     } catch (err) {
-      console.warn('[Dual-Mode Users] Fallback to JSON users storage:', err);
+      console.warn(
+        '[UsersStore] PostgreSQL initialization error:',
+        err
+      );
+
       this.isPostgresActive = false;
       return false;
     } finally {
@@ -100,7 +127,8 @@ class UsersStore {
         this.saveToDisk();
       }
     } catch (err) {
-      console.error('Failed to load users from disk:', err);
+      console.error('[UsersStore] Failed to load users:', err);
+
       this.users = [];
       this.seedInitialAccounts();
     }
@@ -111,9 +139,14 @@ class UsersStore {
       if (!fs.existsSync(DATA_DIR)) {
         fs.mkdirSync(DATA_DIR, { recursive: true });
       }
-      fs.writeFileSync(USERS_FILE, JSON.stringify(this.users, null, 2), 'utf-8');
+
+      fs.writeFileSync(
+        USERS_FILE,
+        JSON.stringify(this.users, null, 2),
+        'utf-8'
+      );
     } catch (err) {
-      console.error('Failed to save users to disk:', err);
+      console.error('[UsersStore] Failed to save users:', err);
     }
   }
 
@@ -161,16 +194,26 @@ class UsersStore {
 
   public findByEmail(email: string): User | undefined {
     if (!email) return undefined;
+
     this.loadFromDisk();
+
     const normalized = email.trim().toLowerCase();
-    return this.users.find((u) => u.email.toLowerCase() === normalized);
+
+    return this.users.find(
+      (u) => u.email.toLowerCase() === normalized
+    );
   }
 
   public findById(id: string): User | undefined {
     this.loadFromDisk();
+
     return this.users.find((u) => u.id === id);
   }
 
+  /*
+   * Legacy local-storage method.
+   * Kept so existing parts of SafeNexa do not break.
+   */
   public createUser(params: {
     name: string;
     email: string;
@@ -179,19 +222,25 @@ class UsersStore {
     password: string;
   }): { user: UserPublicProfile; error?: string } {
     this.loadFromDisk();
+
     const normalizedEmail = params.email.trim().toLowerCase();
 
     if (this.findByEmail(normalizedEmail)) {
-      return { user: {} as UserPublicProfile, error: 'An account with this email already exists.' };
+      return {
+        user: {} as UserPublicProfile,
+        error: 'An account with this email already exists.',
+      };
     }
 
     const { hash, salt } = hashPassword(params.password);
     const now = new Date().toISOString();
+
     const newUser: User = {
       id: `USR-${Math.floor(1000 + Math.random() * 9000)}`,
       name: params.name.trim(),
       email: normalizedEmail,
-      organization: params.organization.trim() || 'Oil India Limited',
+      organization:
+        params.organization.trim() || 'Oil India Limited',
       role: params.role,
       password_hash: hash,
       salt,
@@ -200,26 +249,6 @@ class UsersStore {
 
     this.users.push(newUser);
     this.saveToDisk();
-
-    if (this.isPostgresActive) {
-      const prisma = getPrismaClient();
-      if (prisma) {
-        prisma.user
-          .create({
-            data: {
-              id: newUser.id,
-              name: newUser.name,
-              email: newUser.email,
-              organization: newUser.organization,
-              role: newUser.role,
-              password_hash: newUser.password_hash,
-              salt: newUser.salt,
-              created_at: new Date(newUser.created_at),
-            },
-          })
-          .catch((err) => console.warn('[Dual-Mode Users] Async user write to PostgreSQL failed:', err));
-      }
-    }
 
     return {
       user: {
@@ -233,31 +262,184 @@ class UsersStore {
     };
   }
 
+  /*
+   * Production signup.
+   * Neon PostgreSQL is the source of truth.
+   */
+  public async createUserInPostgres(params: {
+    name: string;
+    email: string;
+    organization: string;
+    role: UserRole;
+    password: string;
+  }): Promise<{ user: UserPublicProfile; error?: string }> {
+    try {
+      const prisma = getPrismaClient();
+
+      if (!prisma) {
+        return {
+          user: {} as UserPublicProfile,
+          error: 'Database connection is unavailable.',
+        };
+      }
+
+      const normalizedEmail = params.email.trim().toLowerCase();
+
+      const existingUser = await prisma.user.findUnique({
+        where: {
+          email: normalizedEmail,
+        },
+      });
+
+      if (existingUser) {
+        return {
+          user: {} as UserPublicProfile,
+          error: 'An account with this email already exists.',
+        };
+      }
+
+      const { hash, salt } = hashPassword(params.password);
+      const now = new Date();
+
+      const newUser = await prisma.user.create({
+        data: {
+          name: params.name.trim(),
+          email: normalizedEmail,
+          organization:
+            params.organization.trim() || 'Oil India Limited',
+          role: params.role,
+          password_hash: hash,
+          salt,
+          created_at: now,
+        },
+      });
+
+      return {
+        user: {
+          id: newUser.id,
+          name: newUser.name,
+          email: newUser.email,
+          organization: newUser.organization,
+          role: newUser.role as UserRole,
+          created_at: newUser.created_at.toISOString(),
+        },
+      };
+    } catch (error) {
+      console.error(
+        '[UsersStore] PostgreSQL signup failed:',
+        error
+      );
+
+      return {
+        user: {} as UserPublicProfile,
+        error: 'Unable to create the account. Please try again.',
+      };
+    }
+  }
+
+  /*
+   * Production login.
+   * Reads directly from Neon PostgreSQL.
+   */
+  public async verifyCredentialsInPostgres(
+    email: string,
+    passwordPlain: string
+  ): Promise<{
+    user: UserPublicProfile;
+    verified: boolean;
+  } | null> {
+    try {
+      const prisma = getPrismaClient();
+
+      if (!prisma) {
+        console.error(
+          '[UsersStore] PostgreSQL client unavailable.'
+        );
+        return null;
+      }
+
+      const normalizedEmail = email.trim().toLowerCase();
+
+      const user = await prisma.user.findUnique({
+        where: {
+          email: normalizedEmail,
+        },
+      });
+
+      if (!user) {
+        return null;
+      }
+
+      const isMatch = verifyPassword(
+        passwordPlain,
+        user.password_hash,
+        user.salt
+      );
+
+      if (!isMatch) {
+        return null;
+      }
+
+      const lastLogin = new Date();
+
+      await prisma.user.update({
+        where: {
+          id: user.id,
+        },
+        data: {
+          last_login: lastLogin,
+        },
+      });
+
+      return {
+        verified: true,
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          organization: user.organization,
+          role: user.role as UserRole,
+          created_at: user.created_at.toISOString(),
+        },
+      };
+    } catch (error) {
+      console.error(
+        '[UsersStore] PostgreSQL login failed:',
+        error
+      );
+
+      return null;
+    }
+  }
+
+  /*
+   * Legacy local verification.
+   * Kept for compatibility with any existing code.
+   */
   public verifyCredentials(
     email: string,
     passwordPlain: string
-  ): { user: UserPublicProfile; verified: boolean } | null {
+  ): {
+    user: UserPublicProfile;
+    verified: boolean;
+  } | null {
     this.loadFromDisk();
+
     const user = this.findByEmail(email);
+
     if (!user) return null;
 
-    const isMatch = verifyPassword(passwordPlain, user.password_hash, user.salt);
+    const isMatch = verifyPassword(
+      passwordPlain,
+      user.password_hash,
+      user.salt
+    );
+
     if (!isMatch) return null;
 
     user.last_login = new Date().toISOString();
-    this.saveToDisk();
 
-    if (this.isPostgresActive) {
-      const prisma = getPrismaClient();
-      if (prisma) {
-        prisma.user
-          .update({
-            where: { email: user.email },
-            data: { last_login: new Date() },
-          })
-          .catch((err) => console.warn('[Dual-Mode Users] Async last_login update to PostgreSQL failed:', err));
-      }
-    }
+    this.saveToDisk();
 
     return {
       verified: true,
@@ -274,6 +456,7 @@ class UsersStore {
 
   public getAllPublicProfiles(): UserPublicProfile[] {
     this.loadFromDisk();
+
     return this.users.map((u) => ({
       id: u.id,
       name: u.name,
@@ -285,11 +468,12 @@ class UsersStore {
   }
 }
 
-// Global Singleton for Next.js server runtime
 declare global {
   // eslint-disable-next-line no-var
   var __usersStore: UsersStore | undefined;
 }
 
-export const usersStore = global.__usersStore || new UsersStore();
+export const usersStore =
+  global.__usersStore || new UsersStore();
+
 global.__usersStore = usersStore;
