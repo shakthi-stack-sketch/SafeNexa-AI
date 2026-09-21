@@ -36,3 +36,4 @@ Thumbs.db
 
 # Prisma generated files (if applicable)
 prisma/*.db-journal
+*.tsbuildinfo

@@ -44,6 +44,10 @@ export interface Report {
   reviewer_comment?: string;
   corrected_sif_potential?: SIFPotential;
   is_demo?: boolean;
+  source?: 'manual' | 'computer_vision' | 'sensor';
+  observation_type?: string;
+  acknowledged_at?: string;
+  escalated_at?: string;
   created_at: string;
   updated_at: string;
 }
@@ -66,9 +70,11 @@ export interface PrecursorPattern {
   created_at: string;
 }
 
+export type AlertSeverity = 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+
 export interface HSEAlert {
   id: string;
-  severity: 'HIGH' | 'MEDIUM' | 'LOW';
+  severity: AlertSeverity;
   trigger: string;
   report_id?: string;
   site: string;
@@ -76,9 +82,46 @@ export interface HSEAlert {
   precursor: string;
   status: 'ACTIVE' | 'ACKNOWLEDGED' | 'ESCALATED' | 'RESOLVED';
   is_demo?: boolean;
+  source?: 'manual' | 'computer_vision' | 'sensor';
+  required_action?: string;
+  acknowledged_at?: string;
+  acknowledged_by?: string;
+  escalated_at?: string;
+  escalated_to?: string;
   created_at: string;
   resolved_at?: string;
   assigned_to?: string;
+}
+
+export interface VisionBoundingBox {
+  label: string;
+  box: [number, number, number, number]; // [x, y, width, height] normalized (0 to 1) or px
+  confidence: number;
+  is_violation: boolean;
+  color: string;
+}
+
+export interface VisionDetectionResult {
+  timestamp: string;
+  person_detected: boolean;
+  helmet_detected: boolean;
+  no_helmet_detected: boolean;
+  vest_detected: boolean;
+  confidence: number;
+  fps: number;
+  risk_level: AlertSeverity;
+  bounding_boxes: VisionBoundingBox[];
+  summary: string;
+}
+
+export interface AutomatedObservationPayload {
+  source: 'computer_vision';
+  observation_type: 'PPE_VIOLATION' | 'UNSAFE_ACT' | 'UNSAFE_CONDITION';
+  description: string;
+  risk_level: AlertSeverity;
+  location: string;
+  timestamp: string;
+  auto_escalate_seconds?: number;
 }
 
 export interface HSEFeedback {
@@ -117,7 +160,7 @@ export interface BatchIngestSummary {
   reports: Report[];
 }
 
-export type UserRole = 'HSE Officer' | 'HSE Manager' | 'Administrator';
+export type UserRole = 'HSE Officer' | 'HSE Manager' | 'Administrator' | 'Employee';
 
 export interface User {
   id: string;

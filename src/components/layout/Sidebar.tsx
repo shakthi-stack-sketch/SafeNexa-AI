@@ -14,7 +14,8 @@ import {
   Settings,
   X,
   Flame,
-  UserCheck
+  UserCheck,
+  Camera
 } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import { useAuth } from '@/lib/auth/AuthContext';
@@ -34,9 +35,11 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { label: 'Overview', href: '/', icon: LayoutDashboard, allowedRoles: ['HSE Officer', 'HSE Manager', 'Administrator'] },
+  { label: 'Overview', href: '/', icon: LayoutDashboard, allowedRoles: ['HSE Officer', 'HSE Manager', 'Administrator', 'Employee'] },
+  { label: 'Safety Monitor', href: '/live-monitor', icon: Camera, badge: 'VISION', allowedRoles: ['HSE Officer', 'HSE Manager', 'Administrator'] },
+  { label: 'Safety Alert Center', href: '/alert-center', icon: ShieldAlert, badge: 'LIVE', allowedRoles: ['HSE Officer', 'HSE Manager', 'Administrator'] },
   { label: 'Report Analyzer', href: '/analyzer', icon: Cpu, badge: 'AI', allowedRoles: ['HSE Officer', 'HSE Manager', 'Administrator'] },
-  { label: 'Reports', href: '/reports', icon: FileText, allowedRoles: ['HSE Officer', 'HSE Manager', 'Administrator'] },
+  { label: 'Reports', href: '/reports', icon: FileText, allowedRoles: ['HSE Officer', 'HSE Manager', 'Administrator', 'Employee'] },
   { label: 'Precursor Patterns', href: '/patterns', icon: Network, allowedRoles: ['HSE Officer', 'HSE Manager', 'Administrator'] },
   { label: 'HSE Intelligence', href: '/hse-intelligence', icon: ShieldAlert, allowedRoles: ['HSE Officer', 'HSE Manager', 'Administrator'] },
   { label: 'Alerts', href: '/alerts', icon: Bell, allowedRoles: ['HSE Officer', 'HSE Manager', 'Administrator'] },

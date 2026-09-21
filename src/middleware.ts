@@ -11,6 +11,9 @@ const PUBLIC_PATHS = [
   '/api/auth/register',
   '/api/auth/forgot-password',
   '/api/auth/logout',
+
+  // Secure n8n integration routes
+  '/api/n8n',
 ];
 
 async function verifyTokenInEdge(token: string): Promise<{ valid: boolean; payload?: any }> {

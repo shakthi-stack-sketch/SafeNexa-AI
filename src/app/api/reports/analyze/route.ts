@@ -53,6 +53,49 @@ export async function POST(req: NextRequest) {
       reportsStore.addReport(fullReport);
     }
 
+    // Automatically trigger Workflow 1 (Critical Safety Alert) for HIGH SIF reports
+    if (analysis.sif_potential === 'HIGH') {
+      const webhookUrl = process.env.N8N_CRITICAL_ALERT_WEBHOOK || 'http://localhost:5678/webhook/safenexa-critical-alert';
+      try {
+        console.log('Sending Critical Safety Alert to n8n...');
+        console.log('Webhook URL:', webhookUrl);
+        console.log('Trigger condition:', analysis.sif_potential);
+
+        const webhookResponse = await fetch(webhookUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            report_id: analysis.report_id,
+            report_text,
+            report_type: (report_type as ReportType) || 'Near Miss',
+            site: site || 'Not identified in the report',
+            activity: analysis.activity,
+            location: analysis.location,
+            hazard: analysis.hazard,
+            barrier_failure: analysis.barrier_failure,
+            sif_potential: analysis.sif_potential,
+            sif_score: analysis.sif_score,
+            life_saving_rule: analysis.life_saving_rule,
+            sif_precursor: analysis.sif_precursor,
+            explanation: analysis.explanation,
+            evidence: analysis.evidence,
+            recommended_actions: analysis.recommended_actions,
+            review_status: 'Pending Review',
+            date: date || new Date().toISOString().split('T')[0],
+            created_at: new Date().toISOString(),
+          }),
+        });
+
+        console.log('HTTP response:', webhookResponse.status);
+        const responseBody = await webhookResponse.text();
+        console.log('Response body:', responseBody);
+      } catch (webhookError) {
+        console.error('Critical Safety Alert webhook failed:', webhookError);
+      }
+    }
+
     // Exact structured JSON response
     return NextResponse.json(analysis, { status: 200 });
   } catch (error: any) {

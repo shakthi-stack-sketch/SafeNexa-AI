@@ -41,12 +41,12 @@ export function EvidencePanel({
               (token) => token.toLowerCase() === part.toLowerCase()
             );
             return isMatch ? (
-              <mark
+              <span
                 key={index}
-                className="bg-accent/25 text-content-primary px-1.5 py-0.5 rounded font-semibold border-b-2 border-accent inline"
+                className="bg-bg-elevated text-content-primary px-1.5 py-0.5 rounded border border-border/80 font-medium inline"
               >
                 {part}
-              </mark>
+              </span>
             ) : (
               <span key={index}>{part}</span>
             );

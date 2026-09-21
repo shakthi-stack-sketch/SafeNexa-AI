@@ -84,10 +84,65 @@ export async function POST(req: NextRequest) {
     // Persist to database
     reportsStore.addReport(savedReport);
 
+    // Automatically trigger Workflow 1 (Critical Safety Alert) for HIGH SIF reports
+    let workflowTriggered = false;
+    let workflowStatus: number | null = null;
+
+    if (savedReport.sif_potential === 'HIGH') {
+      const webhookUrl = process.env.N8N_CRITICAL_ALERT_WEBHOOK || 'http://localhost:5678/webhook/safenexa-critical-alert';
+      try {
+        console.log('Sending Critical Safety Alert to n8n...');
+        console.log('Webhook URL:', webhookUrl);
+        console.log('Trigger condition:', savedReport.sif_potential);
+
+        const webhookResponse = await fetch(webhookUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            report_id: savedReport.id,
+            report_text: savedReport.report_text,
+            report_type: savedReport.report_type,
+            site: savedReport.site,
+            activity: savedReport.activity,
+            location: savedReport.location,
+            hazard: savedReport.hazard,
+            barrier_failure: savedReport.barrier_failure,
+            sif_potential: savedReport.sif_potential,
+            sif_score: savedReport.sif_score,
+            life_saving_rule: savedReport.life_saving_rule,
+            sif_precursor: savedReport.sif_precursor,
+            explanation: savedReport.explanation,
+            evidence: savedReport.evidence,
+            recommended_actions: savedReport.recommended_actions,
+            review_status: savedReport.review_status,
+            date: savedReport.date,
+            created_at: savedReport.created_at,
+          }),
+        });
+
+        workflowStatus = webhookResponse.status;
+        console.log('HTTP response:', webhookResponse.status);
+        const responseBody = await webhookResponse.text();
+        console.log('Response body:', responseBody);
+
+        if (webhookResponse.ok) {
+          workflowTriggered = true;
+        }
+      } catch (webhookError) {
+        console.error('Critical Safety Alert webhook failed:', webhookError);
+      }
+    }
+
     return NextResponse.json(
       {
         report_id: savedReport.id,
         status: 'completed',
+        sif_potential: savedReport.sif_potential,
+        sif_score: savedReport.sif_score,
+        workflow_1_triggered: workflowTriggered,
+        workflow_1_status: workflowStatus,
         report: savedReport,
         analysis,
       },

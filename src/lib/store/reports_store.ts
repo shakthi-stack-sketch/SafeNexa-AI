@@ -528,12 +528,56 @@ class ReportsStore {
     return feedbackRecord;
   }
 
-  public updateAlertStatus(id: string, status: HSEAlert['status']): HSEAlert | null {
+  public addAlert(alert: HSEAlert): HSEAlert {
+    if (alert.is_demo === undefined) {
+      alert.is_demo = this.is_demo_mode;
+    }
+    this.alerts.unshift(alert);
+    this.saveToDisk();
+
+    if (this.isPostgresActive) {
+      const prisma = getPrismaClient();
+      if (prisma) {
+        prisma.hSEAlert
+          .create({
+            data: {
+              id: alert.id,
+              severity: alert.severity,
+              trigger: alert.trigger,
+              report_id: alert.report_id || null,
+              site: alert.site,
+              activity: alert.activity,
+              precursor: alert.precursor,
+              status: alert.status,
+              is_demo: !!alert.is_demo,
+              assigned_to: alert.assigned_to || null,
+              created_at: new Date(alert.created_at),
+            },
+          })
+          .catch((err) => console.warn('[Dual-Mode DB] Async alert create to PostgreSQL failed:', err));
+      }
+    }
+
+    return alert;
+  }
+
+  public updateAlertStatus(
+    id: string,
+    status: HSEAlert['status'],
+    meta?: { acknowledged_by?: string; escalated_to?: string }
+  ): HSEAlert | null {
     const alert = this.alerts.find((a) => a.id === id);
     if (!alert) return null;
     alert.status = status;
-    if (status === 'RESOLVED') {
-      alert.resolved_at = new Date().toISOString();
+    const now = new Date().toISOString();
+    if (status === 'ACKNOWLEDGED') {
+      alert.acknowledged_at = now;
+      if (meta?.acknowledged_by) alert.acknowledged_by = meta.acknowledged_by;
+    } else if (status === 'ESCALATED') {
+      alert.escalated_at = now;
+      if (meta?.escalated_to) alert.escalated_to = meta.escalated_to;
+    } else if (status === 'RESOLVED') {
+      alert.resolved_at = now;
     }
     this.saveToDisk();
 
@@ -660,25 +704,34 @@ class ReportsStore {
   }
 
   private evaluateAlertsForReport(report: Report) {
-    if (report.sif_potential === 'HIGH') {
+    if (report.sif_potential === 'HIGH' || report.source === 'computer_vision') {
       const alertId = `ALT-${Math.floor(800 + Math.random() * 200)}`;
 
+      const isVision = report.source === 'computer_vision';
       const similarReports = this.reports.filter(
         (r) =>
           r.site === report.site &&
           r.life_saving_rule === report.life_saving_rule &&
-          r.sif_potential === 'HIGH' &&
+          (r.sif_potential === 'HIGH' || r.source === 'computer_vision') &&
           r.id !== report.id
       );
 
-      const triggerText =
-        similarReports.length >= 1
-          ? `Cluster Alert: Multiple High SIF reports flagged for '${report.life_saving_rule}' at ${report.site}.`
-          : `Critical SIF Precursor Flagged: '${report.life_saving_rule}' exposure detected at ${report.site}.`;
+      let severity: HSEAlert['severity'] = 'HIGH';
+      let triggerText = '';
+
+      if (isVision) {
+        severity = 'CRITICAL';
+        triggerText = `Automated Vision Alert: Worker detected without required PPE (${report.barrier_failure || 'Hardhat / Helmet Absent'}) at ${report.site}.`;
+      } else {
+        triggerText =
+          similarReports.length >= 1
+            ? `Cluster Alert: Multiple High SIF reports flagged for '${report.life_saving_rule}' at ${report.site}.`
+            : `Critical SIF Precursor Flagged: '${report.life_saving_rule}' exposure detected at ${report.site}.`;
+      }
 
       const newAlert: HSEAlert = {
         id: alertId,
-        severity: 'HIGH',
+        severity,
         trigger: triggerText,
         report_id: report.id,
         site: report.site,
@@ -686,6 +739,10 @@ class ReportsStore {
         precursor: report.sif_precursor,
         status: 'ACTIVE',
         is_demo: report.is_demo,
+        source: report.source || 'manual',
+        required_action: isVision
+          ? 'Immediate safety intervention: Enforce PPE compliance in active camera zone.'
+          : 'Conduct targeted barrier integrity audit with site operations supervisor.',
         created_at: new Date().toISOString(),
         assigned_to: 'Asset HSE Lead',
       };

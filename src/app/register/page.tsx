@@ -213,6 +213,7 @@ export default function RegisterPage() {
                     <option value="HSE Officer">HSE Officer</option>
                     <option value="HSE Manager">HSE Manager</option>
                     <option value="Administrator">Administrator</option>
+                    <option value="Employee">Employee / Field Worker</option>
                   </select>
                 </div>
               </div>
